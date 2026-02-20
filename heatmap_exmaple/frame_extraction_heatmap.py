@@ -1,7 +1,7 @@
 import numpy as np, matplotlib.pyplot as plt
 import os, cv2
 
-def frame_extraction(frame_dir, video_path, downscale, quality):
+def frame_extraction(frame_dir: str, video_path: str, downscale: float, quality: int, target_fps: int) -> None:
     os.makedirs(frame_dir, exist_ok=True)
     cap = cv2.VideoCapture(video_path) # captured video
     fps, width, height = cap.get(cv2.CAP_PROP_FPS), int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)*downscale), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)*downscale)
@@ -12,7 +12,7 @@ def frame_extraction(frame_dir, video_path, downscale, quality):
     for i in range(0, int(cap.get(cv2.CAP_PROP_FRAME_COUNT))):
         flag, frame = cap.read() 
         if not flag: break
-        if not i%round(fps/TARGET_FPS): continue
+        if i%int(round(fps/target_fps)): continue
         path = os.path.join(frame_dir, f"frame_{i:04d}.jpg")
         cv2.imwrite(path, resize(frame), imwrite_params) # jpeg because png is lossless and this will be better for storage
         saved_paths.append(path)
@@ -22,7 +22,7 @@ def frame_extraction(frame_dir, video_path, downscale, quality):
     print(f"Saved: {len(saved_paths)} {saved_paths[-1]}")
 
 
-def heatmaps(frame_paths):
+def heatmaps(frame_paths: str) -> Non:
     prev_gray = None
     total_motion = 0.0
     vals = [] # motion value
@@ -42,16 +42,17 @@ def heatmaps(frame_paths):
     ax2.set(title="Movement over time", xlabel="frame number", ylabel=[])
 
 
-def load_frames(frame_dir) -> None:
+def load_frames(frame_dir: str) -> None:
     return sorted(os.path.join(frame_dir, f) for f in os.listdir(frame_dir) if f.lower().endswith((".png",".jpg",".jpeg")))
     
 if __name__ == "__main__":
-    TARGET_FPS = 12
+    target_fps = 12
     downscale = 0.25 # 1.0 = original size, 0.5 = half resolution
     quality = 75 # quality: 0–100 (higher = better, bigger)
     FRAME_DIR = r"C:\Users\...\frames"
-    frame_extraction(FRAME_DIR, video_path="videos_jump/manyjumps.mp4", downscale=downscale, quality=quality)
+    frame_extraction(FRAME_DIR, video_path="videos_jump/manyjumps.mp4", downscale=downscale, quality=quality, target_fps=target_fps)
     frame_paths = load_frames(FRAME_DIR)
     print(f"Found {len(frame_paths)} frames.")
     heatmaps(frame_paths)
     plt.show()
+
